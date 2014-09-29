@@ -1,5 +1,0 @@
-<launch>
-  <include file="$(find suporteformacao)/robots/p3at_r002/launch/ui.launch" />  
-</launch>
-
-

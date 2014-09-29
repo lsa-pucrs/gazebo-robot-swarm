@@ -1,6 +1,0 @@
-<launch>
-<include file="$(find suporteformacao)/launch/setup.launch" />
-</launch>
-
-
-
