@@ -1,0 +1,22 @@
+<launch>
+
+<arg name="robot_name"/>
+
+<node pkg="move_base" type="move_base" name="$(arg robot_name)_move_base">
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/move_base.yaml" command="load"/>
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_common.yaml" command="load" ns="global_costmap"/>
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_common.yaml" command="load" ns="local_costmap"/>
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_global.yaml" command="load"/>
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_local.yaml" command="load"/>
+	
+	<remap from="cmd_vel"               to="/$(arg robot_name)/move_base/cmd_vel"  />
+	<remap from="move_base/cancel"      to="/$(arg robot_name)/move_base/cancel"   />
+	<remap from="move_base/feedback"    to="/$(arg robot_name)/move_base/feedback" />
+	<remap from="move_base/goal"        to="/$(arg robot_name)/move_base/goal" />
+	<remap from="move_base/result"      to="/$(arg robot_name)/move_base/result" />
+	<remap from="move_base/status"      to="/$(arg robot_name)/move_base/status" />
+	<remap from="move_base_simple/goal" to="/$(arg robot_name)/move_base_simple/goal" />
+	
+</node>
+
+</launch>

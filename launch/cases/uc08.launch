@@ -1,0 +1,14 @@
+<launch>
+<include file="$(find suporteformacao)/launch/setup.launch" />
+<include file="$(find suporteformacao)/launch/robots/p3at_r001.launch" />
+<include file="$(find suporteformacao)/launch/robots/p3at_r002.launch" />
+<include file="$(find suporteformacao)/launch/robots/p3at_r003.launch" />
+<include file="$(find suporteformacao)/launch/robots/p3at_r004.launch" />
+<include file="$(find suporteformacao)/launch/robots/p3at_r005.launch" />
+<include file="$(find suporteformacao)/launch/robots/p3at_r006.launch" />
+<include file="$(find suporteformacao)/launch/robots/p3at_r007.launch" />
+<include file="$(find suporteformacao)/launch/robots/p3at_r008.launch" />
+</launch>
+
+
+

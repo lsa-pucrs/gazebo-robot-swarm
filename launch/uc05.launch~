@@ -1,0 +1,16 @@
+<launch>
+	<!-- Launch the map-->
+	<node pkg="pioneer3at" type="bashim" name="gazebo_server" 
+	      args="gzserver $(find suporteformacao)/config/gazebo/mundo_uc06.sdf"/>
+
+    <!-- Configure this launch file for your hardware setup  -->
+	  <include file="$(find suporteformacao)/robots/p3at_r001/launch/robot.launch" />
+	  <include file="$(find suporteformacao)/robots/p3at_r002/launch/robot.launch" />
+	  <include file="$(find suporteformacao)/robots/p3at_r003/launch/robot.launch" />
+	  <include file="$(find suporteformacao)/robots/p3at_r004/launch/robot.launch" />
+	  <include file="$(find suporteformacao)/robots/p3at_r005/launch/robot.launch" />
+	  <include file="$(find suporteformacao)/robots/p3at_r006/launch/robot.launch" />
+</launch>
+
+
+

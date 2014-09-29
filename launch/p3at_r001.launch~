@@ -1,0 +1,94 @@
+<launch>
+
+<arg name="robot_name"/>
+<arg name="init_pose"/>
+
+<node name="$(arg robot_name)_spawn_minibot_model" pkg="gazebo_ros" type="spawn_model"
+args="$(arg init_pose) -sdf -file $(find suporteformacao)/sdf/pioneer3at.sdf -model $(arg robot_name)"
+respawn="false" output="screen" />
+
+<!-- The odometry estimator, throttling, fake laser etc. go here -->
+<!-- All the stuff as from usual robot launch file -->
+
+<node pkg="suporteformacao" type="sf_gazebo_bridge" name="$(arg robot_name)_Gazebo" ns="p3at_r001" >	
+  <param name="ros_odom_frame"          type="str"    value="/$(arg robot_name)/odom" />
+  <param name="ros_cmd_vel_frame"          type="str"    value="/$(arg robot_name)/cmd_vel" />
+  <param name="ros_child_frame"         type="str"    value="/$(arg robot_name)/base_link" />
+  <param name="ros_odom_tf_future_date" type="double" value="0.05" />
+  
+  <param name="gz_model_name"     type="str" value="$(arg robot_name)" />
+  <param name="gz_pose_topic"     type="str" value="~/pose/info" />
+  <param name="gz_cmd_vel_topic"  type="str" value="~/$(arg robot_name)/vel_cmd" />
+  
+    <!-- <remap from="/$(arg robot_name)/odom"    to="/$(arg robot_name)/pose" /> -->
+    <!-- <remap from="cmd_vel" to="/$(arg robot_name)/cmd_vel" /> -->
+</node>	
+
+<node pkg="pioneer3at" type="joint_state_publisher" name="$(arg robot_name)_joints_publisher">
+	<param name="tf_future_date" type="double" value="0.05" />
+	<remap from="joint_states" to="/$(arg robot_name)/joint_states"/>
+</node>
+
+
+<node pkg="pioneer3at" type="gazebo_laserscan" name="$(arg robot_name)_laserscan">
+  <param name="ros_laserscan_frame" type="str" value="/$(arg robot_name)/laserscan" />
+  <param name="gz_laserscan_topic" type="str" value="~/$(arg robot_name)/hokuyo/link/laser/scan" />
+  <remap from="scan" to="/$(arg robot_name)/laserscan" />
+</node>
+
+<!-- publish static transform from the center of the robot to the laser rangefinder (required for slam_gmapping) -->
+<node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)_laserscan_tf" args="0.2 0 0.35 0 0 0 /$(arg robot_name)/base_link /$(arg robot_name)/laserscan 33"/>
+
+
+<node pkg="robot_state_publisher" type="state_publisher" name="$(arg robot_name)_tf_broadcaster"> 
+	<!-- <param name="tf_prefix" type="string" value="$(arg robot_name)"/> -->
+	<param name="publish_frequency" type="double" value="20.0"/>
+
+	<!-- <remap from="robot_description" to="/p3at_r001/urdf" /> -->
+	<remap from="joint_states" to="/p3at_r001/joint_states"/>
+</node>
+
+
+<node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager" ns="$(arg robot_name)"/>
+<node pkg="nodelet" type="nodelet" name="$(arg robot_name)_cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet nodelet_manager" ns="$(arg robot_name)">
+	<remap from="/cmd_vel_mux/output/cmd_vel" to="/$(arg robot_name)/cmd_vel" />
+	<param name="yaml_cfg_file" value="$(find suporteformacao)/robots/$(arg robot_name)/config/cmd_vel_mux.yaml"/>
+</node>
+
+<node pkg="rqt_robot_steering" type="rqt_robot_steering" name="$(arg robot_name)_rqt_teleop">
+  <param name="default_topic" type="str" value="/$(arg robot_name)/rqt/cmd_vel" />
+  <param name="default_vx_max" type="double" value="0.8" />
+  <param name="default_vx_min" type="double" value="-0.8" />
+  <param name="default_vw_max" type="double" value="1.5" />
+  <param name="default_vw_min" type="double" value="-1.5" />
+</node>
+
+
+<node pkg="gmapping" type="slam_gmapping" name="$(arg robot_name)_gmapping" output="screen">	
+  <rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/gmapping/gmapping.yaml" command="load" />
+  
+  <remap from="scan"          to="/$(arg robot_name)/laserscan"/>
+  <remap from="map"           to="/$(arg robot_name)/map"/>
+  <remap from="map_metadata"  to="/$(arg robot_name)/map_metadata"/>
+</node>
+
+<node pkg="move_base" type="move_base" name="$(arg robot_name)_move_base">
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/move_base.yaml" command="load"/>
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_common.yaml" command="load" ns="global_costmap"/>
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_common.yaml" command="load" ns="local_costmap"/>
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_global.yaml" command="load"/>
+	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_local.yaml" command="load"/>
+	
+	<remap from="cmd_vel"               to="/$(arg robot_name)/move_base/cmd_vel"  />
+	<remap from="move_base/cancel"      to="/$(arg robot_name)/move_base/cancel"   />
+	<remap from="move_base/feedback"    to="/$(arg robot_name)/move_base/feedback" />
+	<remap from="move_base/goal"        to="/$(arg robot_name)/move_base/goal" />
+	<remap from="move_base/result"      to="/$(arg robot_name)/move_base/result" />
+	<remap from="move_base/status"      to="/$(arg robot_name)/move_base/status" />
+	<remap from="move_base_simple/goal" to="/$(arg robot_name)/move_base_simple/goal" />
+	
+</node>
+
+<node pkg="rviz" type="rviz" name="$(arg robot_name)_rviz" args="-d $(find suporteformacao)/robots/$(arg robot_name)/config/rviz/settings.rviz"/>
+
+</launch>

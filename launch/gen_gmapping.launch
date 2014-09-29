@@ -1,0 +1,13 @@
+<launch>
+
+<arg name="robot_name"/>
+
+<node pkg="gmapping" type="slam_gmapping" name="$(arg robot_name)_gmapping" output="screen">	
+  <rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/gmapping/gmapping.yaml" command="load" />
+  
+  <remap from="scan"          to="/$(arg robot_name)/laserscan"/>
+  <remap from="map"           to="/$(arg robot_name)/map"/>
+  <remap from="map_metadata"  to="/$(arg robot_name)/map_metadata"/>
+</node>
+
+</launch>

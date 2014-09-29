@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package>
+  <name>suporteformacao</name>
+  <version>0.1.0</version>
+  <description>BLAH</description>
+  <maintainer email="dereck@gmail.com">Dereck Wonnacott</maintainer>
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/</url>
+
+  <author email="dereck@gmail.com">Dereck Wonnacott</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>  
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>joy</run_depend>
+  
+  <!-- Strictly speaking, only one is required... -->
+  <!-- <run_depend>ROSARIA</run_depend> no rosdep rule exists (yet) -->
+  <!-- <run_depend>p2os</run_depend> no rosdep rule exists (yet) -->
+ 
+  <!-- Strictly speaking, only one is required... -->
+  <run_depend>gmapping</run_depend>
+  <run_depend>move_base</run_depend>
+
+</package>

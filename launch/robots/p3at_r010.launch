@@ -1,0 +1,11 @@
+<launch>
+	<group>
+		<include file="$(find suporteformacao)/launch/gen_pioneer3at.launch" >
+			<arg name="init_pose" value="-x 2 -y -7 -z 0.5" />
+			<arg name="robot_name"  value="p3at_r010" />
+		</include>
+	</group>
+</launch>
+
+
+

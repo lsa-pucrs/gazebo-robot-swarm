@@ -1,0 +1,21 @@
+<launch>
+
+<include file="$(find gazebo_ros)/launch/empty_world.launch">
+	<arg name="world_name" value="$(find suporteformacao)/config/gazebo/mundo.sdf"/>
+	<arg name="paused" value="false"/>
+	<arg name="use_sim_time" value="false"/>
+	<arg name="gui" value="false"/>
+	<arg name="headless" value="true"/>
+	<arg name="debug" value="false"/>
+</include>
+
+  <!-- No namespace here as we will share this description. 
+       Access with slash at the beginning -->
+
+  <param name="robot_description"
+    command="$(find xacro)/xacro.py $(find suporteformacao)/urdf/pioneer3at.xacro" />
+
+</launch>
+
+
+

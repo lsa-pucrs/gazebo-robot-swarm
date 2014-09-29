@@ -1,0 +1,16 @@
+<launch>
+
+    <!-- Configure this launch file for your hardware setup  -->
+	  <include file="$(find suporteformacao)/robots/p3at_r001/launch/hardware.launch" />
+	
+	  <!-- Launch Applications  -->
+	  <include file="$(find suporteformacao)/robots/p3at_r001/launch/apps/gmapping.launch" />
+	  <include file="$(find suporteformacao)/robots/p3at_r001/launch/apps/navigation.launch" />
+	  
+	  <!-- Launch Visualization  -->
+	  <include file="$(find suporteformacao)/launch/ui.launch" />
+	
+</launch>
+
+
+

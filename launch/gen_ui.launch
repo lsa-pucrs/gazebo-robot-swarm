@@ -1,0 +1,15 @@
+<launch>
+
+<arg name="robot_name"/>
+
+<node pkg="rqt_robot_steering" type="rqt_robot_steering" name="$(arg robot_name)_rqt_teleop">
+  <param name="default_topic" type="str" value="/$(arg robot_name)/rqt/cmd_vel" />
+  <param name="default_vx_max" type="double" value="0.8" />
+  <param name="default_vx_min" type="double" value="-0.8" />
+  <param name="default_vw_max" type="double" value="1.5" />
+  <param name="default_vw_min" type="double" value="-1.5" />
+</node>
+
+<node pkg="rviz" type="rviz" name="$(arg robot_name)_rviz" args="-d $(find suporteformacao)/robots/$(arg robot_name)/config/rviz/settings.rviz"/>
+
+</launch>
