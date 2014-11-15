@@ -25,10 +25,9 @@
 </node>
 
 
-<node pkg="pioneer3at" type="gazebo_laserscan" name="$(arg robot_name)_laserscan">
+<node pkg="suporteformacao" type="sf_gazebo_laserscan" name="$(arg robot_name)_laserscan">
   <param name="ros_laserscan_frame" type="str" value="/$(arg robot_name)/laserscan" />
-  <param name="gz_laserscan_topic" type="str" value="~/$(arg robot_name)/hokuyo/link/laser/scan" />
-  <remap from="scan" to="/$(arg robot_name)/laserscan" />
+  <param name="gz_laserscan_topic" type="str" value="/gazebo/default/$(arg robot_name)/hokuyo/link/laser/scan" />
 </node>
 
 

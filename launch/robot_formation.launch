@@ -1,0 +1,6 @@
+<launch>
+	<node pkg="suporteformacao" type="robot_formation" name="robot_formation" >
+	  <param name="input"        type="string"     value="$(find suporteformacao)/config/formation.txt" />
+	  <param name="distance_next"        type="double"     value="4.0" />
+	</node>	
+</launch>

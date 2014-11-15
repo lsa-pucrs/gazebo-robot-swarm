@@ -47,6 +47,12 @@ target_link_libraries(sf_gazebo_bridge     ${catkin_LIBRARIES}
                                         ${Boost_LIBRARIES} 
                                         ${PROTOBUF_LIBRARIES})
 
+add_executable(       sf_gazebo_laserscan     src/sf_gazebo_laserscan.cc)
+target_link_libraries(sf_gazebo_laserscan     ${catkin_LIBRARIES} 
+                                        ${GAZEBO_LIBRARIES} 
+                                        ${Boost_LIBRARIES} 
+                                        ${PROTOBUF_LIBRARIES})
+
 ## Declare a cpp executable
 
 #############

@@ -1,0 +1,12 @@
+ros-indigo-ros-base
+ros-indigo-slam-gmapping
+ros-indigo-navigation
+ros-indigo-robot-state-publisher
+ros-indigo-rqt-common
+ros-indigo-rqt-capabilities
+ros-indigo-rqt-controller-manager
+ros-indigo-rqt-robot-steering
+ros-indigo-rviz
+ros-indigo-xacro
+ros-indigo-yujin-ocs
+ros-indigo-gazebo4-ros-pkgs

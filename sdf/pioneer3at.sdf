@@ -214,5 +214,34 @@
       </joint>
 
 
+  <link name='crown'>
+    <pose>-0.16 0 0.14 0 0 0</pose>
+
+    <collision name='collision'>
+      <geometry>
+        <box>
+          <size>.28 .5 .1</size>
+        </box>
+      </geometry>
+    </collision>
+
+    <visual name='visual'>
+      <geometry>
+        <box>
+          <size>.28 .5 .1</size>
+        </box>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint type="revolute" name="crown_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>crown</child>
+      <parent>chassis</parent>
+      <axis>
+        <xyz>0 0 0</xyz>
+      </axis>
+  </joint>
+
   </model>
 </sdf>

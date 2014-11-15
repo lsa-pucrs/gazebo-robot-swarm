@@ -1,0 +1,113 @@
+#!/usr/bin/python
+import sys
+import roslib
+import rospy
+import actionlib
+import time
+import math
+from random import sample
+from math import radians,sin,cos, pow, sqrt, hypot
+
+class CreateFormation():
+	def readRobots(self):
+		self.robots = []
+		content = []
+		with open(self.input) as f:
+			content = f.readlines()
+		for line in content:
+			line = line.split()
+			self.robots.append(line[0])
+			
+
+	def openFile(self):
+		self.file = open(self.output,"w")
+
+	def write(self,robot,x,y,a):
+		self.file.write(str(robot)+'\t'+str(x) +'\t'+str(y)+'\t'+str(a)+'\n')
+
+
+	def closeFile(self):
+		self.file.close()
+
+	def lineX(self):
+		for i in range(len(self.robots)):
+			self.write(self.robots[i], self.cell_x*i , 0, self.angle)
+
+	def lineY(self):
+		for i in range(len(self.robots)):
+			self.write(self.robots[i], 0 , self.cell_y*i, self.angle)
+
+	def vshape(self):
+		for i in range(len(self.robots)):
+			if(i==0):
+				self.write(self.robots[i], 0, 0, self.angle)
+			elif(i%2==0):
+				tri = (i/2)
+				self.write(self.robots[i], self.cell_x*tri, self.cell_x*tri*-1, self.angle)
+			else:
+				tri = ((i+1)/2)
+				self.write(self.robots[i], self.cell_x*tri*-1, self.cell_x*tri*-1, self.angle)
+
+	def square(self):
+		pass
+
+	def circle(self):
+		for i in range(len(self.robots)):
+			circle_angle = (360 / len(self.robots))*i
+			radians = math.radians(circle_angle)
+			self.write(self.robots[i], self.cell_x*2*math.cos(radians), self.cell_y*2*math.sin(radians), circle_angle)
+
+	def __init__(self):
+		rospy.init_node('create_formation')
+		self.output = rospy.get_param('~output' , 'formation.txt')
+		self.input = rospy.get_param('~input' , 'robots.txt')
+		self.cell_x = rospy.get_param('~cell_x'   , 1)
+		self.cell_y = rospy.get_param('~cell_y'   , 1)
+		self.formation = rospy.get_param('~formation'   , 'lineX')
+		self.angle = rospy.get_param('~angle'   , 90)
+
+		print self.input
+		print self.output
+		print self.formation
+		print self.angle
+
+		self.methods={'lineX':self.lineX,'lineY':self.lineY,'vshape':self.vshape,'circle':self.circle}
+
+		self.readRobots()
+
+		self.openFile()
+		self.methods[self.formation]()
+		self.closeFile()
+
+if __name__ == '__main__':
+    try:
+        CreateFormation()
+    except rospy.ROSInterruptException:
+        rospy.loginfo("AMCL navigation test finished.")
+
+
+# def fQuadrado():
+# 	#se elem >= 4 posso fazer:
+# 	#em cada linha vai a metade de elementos
+# 	x_atual = 0.0
+# 	y_atual = max_y
+# 	index = 0
+# 	aux = 0
+# 	elems = len(lista)
+# 	metade = elems / 2
+# 	if elems >= 4:
+# 		file = open("formacao.txt","w")
+# 		while elems > 0:		#enquanto ainda tenho robos para distribuir
+# 			while aux <= metade: #enquanto nao preenchi a linha
+# 				if elems == 0:
+# 					return
+# 				file.write(str(lista[index][0])+'\t'+str(x_atual) +'\t'+str(y_atual)+'\n')
+# 				elems-=1
+# 				x_atual+=1
+# 				index+=1
+# 				aux+=1
+# 			#desco uma linha
+# 			x_atual = 0.0
+# 			y_atual-=1
+# 			aux = 0			
+# 	return

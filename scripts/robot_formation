@@ -1,0 +1,235 @@
+#!/usr/bin/env python
+
+import roslib
+import rospy
+import actionlib
+import time
+from actionlib_msgs.msg import *
+from geometry_msgs.msg import Pose, PoseWithCovariance, PoseWithCovarianceStamped, Point, PointStamped, Quaternion, Twist
+from nav_msgs.msg import Odometry
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from random import sample
+from math import radians,sin,cos, pow, sqrt, hypot
+
+class OdomReader():
+    __slots__ = ['odometry']
+    def __init__(self):
+        self.odometry = None
+
+    def updateOdom(self, msg): #callback
+        self.odometry = msg
+
+    def getPoint(self):
+        if self.odometry is None:
+            return Point(float("-inf"),float("-inf"),float("-inf"))
+        return self.odometry.pose.pose.position
+
+    def distanceOfPoint(self, point):
+        me = self.getPoint()
+        return hypot(me.x-point.x, me.y-point.y)
+
+
+class RobotFormation():
+    def receivePoint(self, msg):  #callback
+        self.clean()
+        content = []
+        cartesian_coordinates = []
+        output_list = []
+        point_x = msg.point.x
+        point_y = msg.point.y
+        print("Point received: X={}\tY={}".format(point_x,point_y))
+        with open(self.input) as f:
+            content = f.readlines()
+        for line in content:
+            line = line.split()
+            print line
+            temp = []
+            temp.append(line[0])
+            temp.append(float(line[1]))
+            temp.append(float(line[2]))
+            temp.append(float(line[3]))
+            cartesian_coordinates.append(temp)
+
+        max_x = float("-inf")
+        min_x = float("inf")
+        max_y = max_x
+        min_y = min_x
+
+
+        for coord in cartesian_coordinates:
+            if(coord[1]>max_x):
+                max_x = coord[1]
+            if(coord[2]>max_y):
+                max_y = coord[2]
+            if(coord[1]<min_x):
+                min_x = coord[1]
+            if(coord[2]<min_y):
+                min_y = coord[2]
+
+        delta_x = max_x - min_x
+        delta_y = max_y - min_y
+
+        print "delta_x: {}".format(delta_x)
+        print "delta_y: {}".format(delta_y)
+
+        for coord in cartesian_coordinates:
+            coord[1] = point_x + coord[1] - min_x - delta_x/2.0
+            coord[2] = point_y + coord[2] - min_y - delta_y/2.0
+            #output_list.append("{}\t{}\t{}\t{}\n".format(coord[0],coord[1],coord[2],coord[3]))
+            self.point_coordinates.append(coord)
+        print "isso aqui eh o que quero"
+        print self.point_coordinates
+        print "acaba aqui"
+        #write_output_file()
+        self.subscribeOdoms()
+        self.populateMoveBases()
+        self.startFormation()
+
+    def populateMoveBases(self):
+        for coord in self.point_coordinates:
+            robotName = coord[0]
+            if robotName not in self.move_bases:
+                self.move_bases[robotName] = actionlib.SimpleActionClient("{}/move_base".format(robotName), MoveBaseAction)
+                rospy.loginfo("Waiting for {}/move_base action server...".format(robotName))
+                self.move_bases[robotName].wait_for_server(rospy.Duration(60))
+                rospy.loginfo("Connected to {}/move_base server".format(robotName))
+
+    def sendGoal(self, robotName, destination):
+        self.goals[robotName] = MoveBaseGoal()
+        self.goals[robotName].target_pose.pose = destination
+        self.goals[robotName].target_pose.header.frame_id = '/{}/map'.format(robotName)
+        self.goals[robotName].target_pose.header.stamp = rospy.Time.now()
+        self.move_bases[robotName].send_goal(self.goals[robotName])
+
+    def processCoordinate(self, coord):
+        robotName = coord[0]
+        a = coord[3]
+        ar = radians(a/2.0)
+        nx = 0
+        ny = 0
+        nz = 1
+        destination = Pose(Point(coord[1], coord[2], 1), Quaternion(sin(ar) * nx, sin(ar)* ny, sin(ar) * nz, cos(ar)))
+        outputs = "sending {} to location {}".format(robotName,str(destination)) 
+        rospy.loginfo(outputs)
+        state = self.move_bases[robotName].get_state()
+        rospy.loginfo("state: " + str(self.goal_states[state]))
+        self.sendGoal(robotName ,destination)
+        self.formation_states[robotName] = 'MOVING'
+
+    def getGoalState(self, robotName):
+        state = 9
+        try:
+            state = self.move_bases[robotName].get_state()
+        except rospy.ROSInterruptException: 
+            print "meh"
+        return str(self.goal_states[state])
+
+    def subscribeOdoms(self):
+        for coord in self.point_coordinates:
+            robotName = coord[0]
+            if robotName not in self.odoms:
+                    self.odoms[robotName] = OdomReader()
+                    rospy.Subscriber("/{}/odom".format(robotName), Odometry, self.odoms[robotName].updateOdom)
+
+    def getDistanceBetweenGoal(self,robotName):
+        return self.odoms[robotName].distanceOfPoint(self.goals[robotName].target_pose.pose.position)
+
+    def startFormation(self):
+        for coord in self.point_coordinates:
+            robotName = coord[0]
+            self.formation_states[robotName] = 'IDLE'
+            self.move_bases[robotName].cancel_goal()
+
+        aborted = False
+        while not rospy.is_shutdown() and not aborted:
+            lastRobot = None
+            for coord in self.point_coordinates: # para cada robo
+                robotName = coord[0] # ajusta o nome do atual
+                if self.formation_states[robotName] == 'SUCCEEDED':
+                    continue
+
+                if(self.getGoalState(robotName)=='SUCCEEDED'): # atualiza o estado
+                    print "{} SUCCEEDED... ".format(robotName)
+                    self.formation_states[robotName] = 'SUCCEEDED'
+
+                if self.formation_states[robotName] == 'IDLE': # se eu estou parado
+                    if (lastRobot is None): # se eu sou o primeiro
+                        print "{} is FIRST!... ".format(robotName)
+                        self.processCoordinate(coord)
+                    else: # ou se existe outro antes de mim
+                        if(self.formation_states[lastRobot] != 'IDLE'): # se o anterior ja deu umas bandas
+                            distance = self.getDistanceBetweenGoal(lastRobot)
+                            print "{} is this far: {} from goal...".format(lastRobot,distance)
+                            if(distance < self.distance_next): # se o anterior esta perto do goal
+                                print "{} is close to his goal, so {} will go too... ".format(lastRobot,robotName)
+                                self.processCoordinate(coord) # eu tambem vou
+                else: # se eu nao estou parado
+                    print "current state of goal of {} is: {}".format(robotName, self.getGoalState(robotName))
+                    if(self.getGoalState(robotName) == "ABORTED"):
+                        print "{} got its goal ABORTED, probably because it was unreachable: ".format(robotName)
+                        print self.goals[robotName]
+                        aborted = True
+                        return
+                    now = rospy.Time.now()
+                    goalTime = self.goals[robotName].target_pose.header.stamp
+                    if now.secs - goalTime.secs > 60:
+                        print "{} timed out. sending goal again... ".format(robotName)
+                        self.move_bases[robotName].cancel_goal()
+                        self.processCoordinate(coord)
+
+                if rospy.is_shutdown() or aborted:
+                    break
+
+                lastRobot = robotName
+                rospy.sleep(0.1)
+            # while not rospy.is_shutdown():
+            #     state = self.move_bases[coord[0]].get_state()
+            #     rospy.loginfo("state: " + str(self.goal_states[state]))
+            #     rospy.sleep(1)
+            #     if state == GoalStatus.SUCCEEDED:
+            #         break
+
+    def clean(self):
+        self.move_bases = dict()
+        self.goals = dict()
+        self.odoms = dict()
+        self.formation_states = dict()
+        self.move_bases = dict()
+        self.point_coordinates = []
+
+    def __init__(self):
+        rospy.init_node('robot_formation', anonymous=True)
+        
+        rospy.on_shutdown(self.shutdown)
+
+        self.input = rospy.get_param('~input'   , 'formation.txt')
+	self.distance_next = rospy.get_param('~distance_next'   , 5.0)
+
+        # Goal state return values
+        self.goal_states = ['PENDING', 'ACTIVE', 'PREEMPTED', 
+                       'SUCCEEDED', 'ABORTED', 'REJECTED',
+                       'PREEMPTING', 'RECALLING', 'RECALLED',
+                       'LOST']
+
+        rospy.Subscriber("clicked_point", PointStamped, self.receivePoint)
+    
+            
+
+    def shutdown(self):
+        #rospy.loginfo("Stopping the robot...")
+        #self.move_base.cancel_goal()
+        #rospy.sleep(2)
+        #self.cmd_vel_pub.publish(Twist())
+        rospy.sleep(1)
+      
+def trunc(f, n):
+    # Truncates/pads a float f to n decimal places without rounding
+    slen = len('%.*f' % (n, f))
+    return float(str(f)[:slen])
+
+if __name__ == '__main__':
+    try:
+        RobotFormation()
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        rospy.loginfo("AMCL navigation test finished.")

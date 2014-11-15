@@ -1,0 +1,71 @@
+#!/usr/bin/python
+import sys
+import roslib
+import rospy
+import actionlib
+import time
+import math
+from random import sample
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import LaserScan
+from math import radians,sin,cos, pow, sqrt, hypot
+
+class TopicFlag():
+    __slots__ = ['published']
+    def __init__(self):
+        self.published = False
+
+    def updateFlag(self,msg):
+    	if not self.published:
+    		self.published = True
+
+class CheckTopics():
+	def readRobots(self):
+		self.robots = []
+		content = []
+		with open(self.input) as f:
+			content = f.readlines()
+		for line in content:
+			line = line.split()
+			self.robots.append(line[0])
+
+	def subscribeLaserscan(self):
+		for robotName in self.robots:
+			self.scans[robotName] = TopicFlag()
+			rospy.Subscriber("/{}/laserscan".format(robotName), LaserScan, self.scans[robotName].updateFlag)
+		
+	def subscribeOdometry(self):
+		for robotName in self.robots:
+			self.odoms[robotName] = TopicFlag()
+			rospy.Subscriber("/{}/odom".format(robotName), Odometry, self.odoms[robotName].updateFlag)
+
+	def printNotReady(self):
+		for robotName in self.robots:
+			if not self.odoms[robotName].published:
+				print "{} Odometry is not ready".format(robotName)
+			if not self.scans[robotName].published:
+				print "{} LaserScan is not ready".format(robotName)
+
+	def __init__(self):
+		rospy.init_node('check_topics')
+
+		self.input = rospy.get_param('~input' , './config/robots.txt')
+
+		self.readRobots()
+
+		self.odoms = dict ()
+		self.scans = dict ()
+
+		self.subscribeLaserscan()
+		self.subscribeOdometry()
+
+		while not rospy.is_shutdown():
+			print rospy.Time.now()
+			self.printNotReady()
+			rospy.sleep(1)
+if __name__ == '__main__':
+    try:
+        CheckTopics()
+    except rospy.ROSInterruptException:
+        rospy.loginfo("meh")
+

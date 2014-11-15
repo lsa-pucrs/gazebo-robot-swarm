@@ -9,6 +9,7 @@
 	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_global.yaml" command="load"/>
 	<rosparam file="$(find suporteformacao)/robots/$(arg robot_name)/config/move_base/costmap_local.yaml" command="load"/>
 	
+	<remap from="odom"                  to="/$(arg robot_name)/move_base/odom"  />
 	<remap from="cmd_vel"               to="/$(arg robot_name)/move_base/cmd_vel"  />
 	<remap from="move_base/cancel"      to="/$(arg robot_name)/move_base/cancel"   />
 	<remap from="move_base/feedback"    to="/$(arg robot_name)/move_base/feedback" />
