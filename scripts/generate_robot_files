@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+import rospy
+from os import listdir,makedirs
+from string import Template
+from os.path import join, basename, isdir, exists, isfile
+
+class GenerateRobotFiles():
+    __slots__ = ['template_folder', 'robots_folder','robot_list_file','robot_values','launch_folder','launch_file']
+    def __init__(self):
+        rospy.init_node('generate_robot_files')
+        self.template_folder = rospy.get_param('~template_folder' , './config/${robot_name}')
+        self.robots_folder = rospy.get_param('~robots_folder' , './robots')
+        self.robot_list_file = rospy.get_param('~robot_list_file' , './config/robots.txt')
+        self.robot_launch_path = rospy.get_param('~robot_launch_path' , './robots/${robot_name}/launch/${robot_name}.launch')
+        self.launch_file = rospy.get_param('~launch_file' , './launch/start.launch')
+        self.robot_values = []
+        self.read_robot_list_file()
+        self.copy_folder(self.template_folder,self.robots_folder)
+        self.generate_launch()
+        print "Files generated successfully... And {} was updated.".format(self.launch_file)
+        print "You can close this execution, now."
+
+    def generate_launch(self):
+        launchtemplate = Template(self.robot_launch_path)
+        outputfile = open(self.launch_file,"w")
+        outputfile.write("<launch>\n")
+        outputfile.write("<include file=\"$(find suporteformacao)/launch/setup.launch\" />\n")
+        for robot_value in self.robot_values:
+            outputfile.write("<include file=\"$(find suporteformacao)/{}\"/>\n".format(launchtemplate.substitute(robot_value)))
+        outputfile.write("<include file=\"$(find suporteformacao)/launch/suporteformacao.launch\" />\n")
+        outputfile.write("</launch>")
+        outputfile.close()
+
+    def read_robot_list_file(self):
+        content = []
+        with open(self.robot_list_file) as f:
+            content = f.readlines()
+            f.close()
+        for line in content:
+            line = line.split()
+            temp = dict()
+            temp["robot_name"]=(line[0])
+            temp["initial_pose_x"]=(line[1])
+            temp["initial_pose_y"]=(line[2])
+            self.robot_values.append(temp)
+
+    def copy_file(self,filename,destination_parent):
+        #print "reading file {}".format(filename)
+        if(isfile(filename)):
+            #print "isfile"
+            inputfile = open(filename)
+            inputcontets = Template(inputfile.read())
+            for robot_value in self.robot_values:
+                parent_path = Template(destination_parent).substitute(robot_value)
+                if not exists(parent_path):
+                    makedirs(parent_path)
+                destination = Template(join(parent_path,basename(filename))).substitute(robot_value)
+                outputfile = open(destination,"w")
+                outputfile.write(inputcontets.substitute(robot_value))
+                outputfile.close()
+            inputfile.close()
+
+    def copy_folder(self,folder,destination_parent):
+        #print "reading folder {}".format(folder)
+        if(isdir(folder)):
+            #print "isdir"
+            for robot_value in self.robot_values:
+                fake_path = join(destination_parent,basename(folder))
+                destination = Template(fake_path).substitute(robot_value)
+                for item in listdir(folder):
+                    full_path = join(folder,item)
+                    if(isfile(full_path)):
+                        self.copy_file(full_path,fake_path)
+                    if(isdir(full_path)):
+                        self.copy_folder(full_path,fake_path)
+
+if __name__ == '__main__':
+    try:
+        GenerateRobotFiles()
+    except rospy.ROSInterruptException:
+        rospy.loginfo("GenerateRobotFiles ended")

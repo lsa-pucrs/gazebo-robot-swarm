@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="suporteformacao" type="check_topics" name="check_topics" output="screen">
+	  <param name="input"       type="string"     value="$(find suporteformacao)/config/robots.txt" />
+	</node>	
+</launch>

@@ -1,0 +1,8 @@
+<launch>
+	<group>
+		<include file="$$(find suporteformacao)/launch/gen_pioneer3at.launch" >
+			<arg name="init_pose" value="-x ${initial_pose_x} -y ${initial_pose_y} -z 0.5" />
+			<arg name="robot_name"  value="${robot_name}" />
+		</include>
+	</group>
+</launch>

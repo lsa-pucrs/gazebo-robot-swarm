@@ -1,5 +1,4 @@
-p3at_r001
-p3at_r002
-p3at_r003
-p3at_r004
-p3at_r005
+robot01 -7 -7
+robot02 -6 -7
+robot03 -7 0
+robot04 -6 1

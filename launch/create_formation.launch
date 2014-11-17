@@ -1,5 +1,5 @@
 <launch>
-	<node pkg="suporteformacao" type="create_formation" name="create_formation" >
+	<node pkg="suporteformacao" type="create_formation" name="create_formation" output="screen">
 	  <param name="/output"       type="string"     value="$(find suporteformacao)/config/formation.txt" />
 	  <param name="/input"        type="string"     value="$(find suporteformacao)/config/robots.txt" />
 	  <param name="/cell_x"       type="double"     value="1" />

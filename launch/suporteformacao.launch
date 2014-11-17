@@ -1,0 +1,4 @@
+<launch>
+<include file="$(find suporteformacao)/launch/check_topics.launch"/>
+<include file="$(find suporteformacao)/launch/robot_formation.launch"/>
+</launch>

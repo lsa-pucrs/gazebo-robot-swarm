@@ -42,7 +42,7 @@ double ros_odom_tf_future_date;
 /////////////////////////////////////////////////
 void ros_cmd_vel_Callback(const geometry_msgs::Twist::ConstPtr& msg_in)
 { 
-  std::cout << "roc_cmd_vel" << std::endl;
+  //std::cout << "roc_cmd_vel" << std::endl;
   // Generate a pose
   gazebo::math::Pose pose(msg_in->linear.x,
                           msg_in->linear.y,
@@ -54,14 +54,14 @@ void ros_cmd_vel_Callback(const geometry_msgs::Twist::ConstPtr& msg_in)
   // Convert to a pose message
   gazebo::msgs::Pose msg_out;
   gazebo::msgs::Set(&msg_out, pose);
-  std::cout << "ros_cmd_vel_pub" << std::endl;
+  //std::cout << "ros_cmd_vel_pub" << std::endl;
   gz_vel_cmd_pub->Publish(msg_out);
 }
 
 /////////////////////////////////////////////////
 void gz_odom_Callback(ConstPosesStampedPtr &msg_in)
 { 
-  std::cout << "gz_odom" << msg_in->DebugString() << std::endl;
+  //std::cout << "gz_odom" << msg_in->DebugString() << std::endl;
 
   float x  = 0;
   float y  = 0;
@@ -70,7 +70,7 @@ void gz_odom_Callback(ConstPosesStampedPtr &msg_in)
   for (int i = 0; i < msg_in->pose_size(); i++) 
     if(msg_in->pose(i).name() == gz_model_name)
     {
-      std::cout << msg_in->pose(i).DebugString() << std::endl;
+      //std::cout << msg_in->pose(i).DebugString() << std::endl;
       x = msg_in->pose(i).position().x();
       y = msg_in->pose(i).position().y();
       odom_quat.x = msg_in->pose(i).orientation().x();
@@ -102,14 +102,14 @@ void gz_odom_Callback(ConstPosesStampedPtr &msg_in)
   odom.twist.twist.linear.y   = 0.0;  //vy;
   odom.twist.twist.angular.z  = 0.0;  //vth;
 
-  std::cout << "publish odom: " << odom << std::endl;
+  //std::cout << "publish odom: " << odom << std::endl;
   ros_odom_pub.publish(odom);
 }
 
 /////////////////////////////////////////////////
 int main( int argc, char* argv[] )
 {
-  std::cout << "main" << std::endl;
+  //std::cout << "main" << std::endl;
   // Initialize ROSros_odom_pub
   ros::init(argc, argv, "Gazebo_Bridge");
   ros::NodeHandle n;
@@ -130,31 +130,31 @@ int main( int argc, char* argv[] )
   odom_broadcaster = new tf::TransformBroadcaster;
   ros_odom_pub_seq = 0;
     
-  std::cout << "sleep" << std::endl;
+  //std::cout << "sleep" << std::endl;
   // When launched from a launch file we need to give Gazebo time to load
   //ros::Duration(7.0).sleep();
-  std::cout << "gazebo" << std::endl;
+  //std::cout << "gazebo" << std::endl;
   // Initialize Gazebo
   gazebo::setupClient(argc, argv);
   //gazebo::transport::init();
-  std::cout << "node" << std::endl;
+  //std::cout << "node" << std::endl;
   gazebo::transport::NodePtr node(new gazebo::transport::Node());
   node->Init();
   //gazebo::transport::run();
 
-  std::cout << "advertiser" << std::endl;
+  //std::cout << "advertiser" << std::endl;
   gz_vel_cmd_pub = node->Advertise<gazebo::msgs::Pose>(gz_cmd_vel_topic);
     
-  std::cout << "subscribers" << std::endl;
+  //std::cout << "subscribers" << std::endl;
   // Subscribers
   gazebo::transport::SubscriberPtr gz_odom_sub = node->Subscribe(gz_pose_topic, gz_odom_Callback);
   ros::Subscriber ros_cmd_vel_sub = n.subscribe(ros_cmd_vel_frame, 1, ros_cmd_vel_Callback);
   
-  std::cout << "spin" << std::endl;
+  //std::cout << "spin" << std::endl;
   // Spin
   ros::spin();
 
-  std::cout << "fini" << std::endl;
+  //std::cout << "fini" << std::endl;
   // Shutdown
   //gazebo::transport::fini();
   gazebo::shutdown();

@@ -32,7 +32,7 @@ bool use_sim_time;
 /////////////////////////////////////////////////
 void gz_laserscan_Callback(ConstLaserScanStampedPtr &msg_in)
 { 
-  std::cout << "callback" << std::endl;
+  //std::cout << "callback" << std::endl;
   //std::cout << ">> " << msg_in->DebugString() << std::endl;
   sensor_msgs::LaserScan msg_out;
   msg_out.angle_min         = msg_in->scan().angle_min();
@@ -46,14 +46,14 @@ void gz_laserscan_Callback(ConstLaserScanStampedPtr &msg_in)
   
   if(use_sim_time)
   {
-    std::cout << "sim time" << std::endl;
+    //std::cout << "sim time" << std::endl;
     uint32_t sec = msg_in->time().sec();
     uint32_t nsec = msg_in->time().nsec();
     msg_out.header.stamp    = ros::Time( sec, nsec );
   }
   else
   {
-    std::cout << "no sim time" << std::endl;
+    //std::cout << "no sim time" << std::endl;
     msg_out.header.stamp    = ros::Time::now();
   }
   
@@ -63,7 +63,7 @@ void gz_laserscan_Callback(ConstLaserScanStampedPtr &msg_in)
   for(int i = 0; i < msg_in->scan().intensities_size(); i++){
     msg_out.intensities.push_back( msg_in->scan().intensities(i) );
   }
-  std::cout << "publish" << std::endl;
+  //std::cout << "publish" << std::endl;
   ros_laserscan_pub.publish(msg_out);
 }
 
@@ -71,7 +71,7 @@ void gz_laserscan_Callback(ConstLaserScanStampedPtr &msg_in)
 int main( int argc, char* argv[] )
 {
   // Initialize ROS
-  std::cout << "main" << std::endl;
+  //std::cout << "main" << std::endl;
   ros::init(argc, argv, "Gazebo_laserscan");
   ros::NodeHandle n;
   ros::NodeHandle n_("~");
@@ -82,29 +82,29 @@ int main( int argc, char* argv[] )
   ros_laserscan_pub = n.advertise<sensor_msgs::LaserScan>(ros_laserscan_frame, 100);
     
   // When launched from a launch file we need to give Gazebo time to load
-  std::cout << "ros sleep" << std::endl;
+  //std::cout << "ros sleep" << std::endl;
   ros::Duration(5.0).sleep();
-  std::cout << "gazebo client" << std::endl;
+  //std::cout << "gazebo client" << std::endl;
   // Initialize Gazebo
   gazebo::setupClient(argc, argv);
   // gazebo::transport::init();
-  std::cout << "gazebo node" << std::endl;
+  //std::cout << "gazebo node" << std::endl;
   gazebo::transport::NodePtr gz_node(new gazebo::transport::Node());
   gz_node->Init();
   //gazebo::transport::run();
 
-  std::cout << "gazebo node ok" << std::endl;
+  //std::cout << "gazebo node ok" << std::endl;
   
   std::string gz_laserscan_topic = "";
   n_.getParam("gz_laserscan_topic", gz_laserscan_topic);
-  std::cout << "subscribing to gazebo: " << gz_laserscan_topic << std::endl;
+  //std::cout << "subscribing to gazebo: " << gz_laserscan_topic << std::endl;
   gazebo::transport::SubscriberPtr gz_laserscan_sub = gz_node->Subscribe( gz_laserscan_topic,
                                                                           gz_laserscan_Callback);
 
-  std::cout << "spin" << std::endl;
+  //std::cout << "spin" << std::endl;
   // Spin
   ros::spin();
-  std::cout << "fini" << std::endl;
+  //std::cout << "fini" << std::endl;
   // Shutdown
   //gazebo::transport::fini();
   gazebo::shutdown();

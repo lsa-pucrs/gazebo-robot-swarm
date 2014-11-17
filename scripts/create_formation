@@ -66,6 +66,8 @@ class CreateFormation():
 		self.formation = rospy.get_param('~formation'   , 'lineX')
 		self.angle = rospy.get_param('~angle'   , 90)
 
+		print "generating formation"
+		print "parameters:"
 		print self.input
 		print self.output
 		print self.formation
@@ -79,35 +81,11 @@ class CreateFormation():
 		self.methods[self.formation]()
 		self.closeFile()
 
+		print "Formation generated successfully...\n"
+        print "You can close this execution, now."
+
 if __name__ == '__main__':
     try:
         CreateFormation()
     except rospy.ROSInterruptException:
-        rospy.loginfo("AMCL navigation test finished.")
-
-
-# def fQuadrado():
-# 	#se elem >= 4 posso fazer:
-# 	#em cada linha vai a metade de elementos
-# 	x_atual = 0.0
-# 	y_atual = max_y
-# 	index = 0
-# 	aux = 0
-# 	elems = len(lista)
-# 	metade = elems / 2
-# 	if elems >= 4:
-# 		file = open("formacao.txt","w")
-# 		while elems > 0:		#enquanto ainda tenho robos para distribuir
-# 			while aux <= metade: #enquanto nao preenchi a linha
-# 				if elems == 0:
-# 					return
-# 				file.write(str(lista[index][0])+'\t'+str(x_atual) +'\t'+str(y_atual)+'\n')
-# 				elems-=1
-# 				x_atual+=1
-# 				index+=1
-# 				aux+=1
-# 			#desco uma linha
-# 			x_atual = 0.0
-# 			y_atual-=1
-# 			aux = 0			
-# 	return
+        rospy.loginfo("Create Formation cancelled.")

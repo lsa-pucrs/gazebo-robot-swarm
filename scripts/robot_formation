@@ -120,8 +120,8 @@ class RobotFormation():
         state = 9
         try:
             state = self.move_bases[robotName].get_state()
-        except rospy.ROSInterruptException: 
-            print "meh"
+        except Exception, e: 
+            pass
         return str(self.goal_states[state])
 
     def subscribeOdoms(self):
@@ -140,19 +140,22 @@ class RobotFormation():
             self.formation_states[robotName] = 'IDLE'
             self.move_bases[robotName].cancel_goal()
 
+        done = False
         aborted = False
-        while not rospy.is_shutdown() and not aborted:
+        while not rospy.is_shutdown() and not aborted and not done:
             lastRobot = None
+            
+            success = 0
             for coord in self.point_coordinates: # para cada robo
                 robotName = coord[0] # ajusta o nome do atual
                 if self.formation_states[robotName] == 'SUCCEEDED':
+                    success += 1
                     continue
 
-                if(self.getGoalState(robotName)=='SUCCEEDED'): # atualiza o estado
-                    print "{} SUCCEEDED... ".format(robotName)
-                    self.formation_states[robotName] = 'SUCCEEDED'
+                if success >= len(self.point_coordinates):
+                    done = True
 
-                if self.formation_states[robotName] == 'IDLE': # se eu estou parado
+                if self.formation_states[robotName] == 'IDLE': # se da ultima vez eu estava parado
                     if (lastRobot is None): # se eu sou o primeiro
                         print "{} is FIRST!... ".format(robotName)
                         self.processCoordinate(coord)
@@ -164,6 +167,8 @@ class RobotFormation():
                                 print "{} is close to his goal, so {} will go too... ".format(lastRobot,robotName)
                                 self.processCoordinate(coord) # eu tambem vou
                 else: # se eu nao estou parado
+                    self.formation_states[robotName] = self.getGoalState(robotName) # atualiza o estado
+
                     print "current state of goal of {} is: {}".format(robotName, self.getGoalState(robotName))
                     if(self.getGoalState(robotName) == "ABORTED"):
                         print "{} got its goal ABORTED, probably because it was unreachable: ".format(robotName)
@@ -182,6 +187,11 @@ class RobotFormation():
 
                 lastRobot = robotName
                 rospy.sleep(0.1)
+        if done:
+            print "Formation has concluded successfully..."
+        else:
+            print "There was a problem during formation process."
+
             # while not rospy.is_shutdown():
             #     state = self.move_bases[coord[0]].get_state()
             #     rospy.loginfo("state: " + str(self.goal_states[state]))
@@ -232,4 +242,4 @@ if __name__ == '__main__':
         RobotFormation()
         rospy.spin()
     except rospy.ROSInterruptException:
-        rospy.loginfo("AMCL navigation test finished.")
+        rospy.loginfo("robot_formation ended")

@@ -1,0 +1,8 @@
+<launch>
+<include file="$(find suporteformacao)/launch/setup.launch" />
+<include file="$(find suporteformacao)/robots/robot01/launch/robot01.launch"/>
+<include file="$(find suporteformacao)/robots/robot02/launch/robot02.launch"/>
+<include file="$(find suporteformacao)/robots/robot03/launch/robot03.launch"/>
+<include file="$(find suporteformacao)/robots/robot04/launch/robot04.launch"/>
+<include file="$(find suporteformacao)/launch/suporteformacao.launch" />
+</launch>

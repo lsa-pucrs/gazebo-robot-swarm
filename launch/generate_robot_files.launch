@@ -1,0 +1,10 @@
+<launch>
+	<node pkg="suporteformacao" type="generate_robot_files" name="generate_robot_files" output="screen">
+	  <param name="template_folder"       type="string"     value="$(find suporteformacao)/config/${robot_name}" />
+	  <param name="robots_folder"        type="string"     value="$(find suporteformacao)/robots" />
+	  <param name="robot_list_file"       type="string"     value="$(find suporteformacao)/config/robots.txt" />
+	  <!-- the genericl(with placeholder) launch path of a robot, inside the package -->
+	  <param name="robot_launch_path"       type="string"     value="robots/${robot_name}/launch/${robot_name}.launch" />
+	  <param name="launch_file"    type="string"     value="$(find suporteformacao)/launch/start.launch" />
+	</node>	
+</launch>

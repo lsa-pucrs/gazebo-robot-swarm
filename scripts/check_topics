@@ -40,11 +40,15 @@ class CheckTopics():
 			rospy.Subscriber("/{}/odom".format(robotName), Odometry, self.odoms[robotName].updateFlag)
 
 	def printNotReady(self):
+		count = 0
 		for robotName in self.robots:
 			if not self.odoms[robotName].published:
 				print "{} Odometry is not ready".format(robotName)
+				count+=1
 			if not self.scans[robotName].published:
 				print "{} LaserScan is not ready".format(robotName)
+				count+=1
+		return count
 
 	def __init__(self):
 		rospy.init_node('check_topics')
@@ -61,11 +65,15 @@ class CheckTopics():
 
 		while not rospy.is_shutdown():
 			print rospy.Time.now()
-			self.printNotReady()
-			rospy.sleep(1)
+			if(self.printNotReady()==0):
+				break
+			rospy.sleep(2)
+		print rospy.Time.now()
+		print "Every topic seems OK now."
+
 if __name__ == '__main__':
     try:
         CheckTopics()
     except rospy.ROSInterruptException:
-        rospy.loginfo("meh")
+        rospy.loginfo("check_topics ended")
 
